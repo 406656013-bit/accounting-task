@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ระบบติดตามงานสำนักงานบัญชี</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #222;
+        }
+
+        /* ส่วนหัว */
+
+        header {
+            background: #173b67;
+            color: white;
+            padding: 25px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        header p {
+            margin: 8px 0 0;
+            opacity: 0.9;
+        }
+
+        /* พื้นที่เว็บไซต์ */
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        /* กล่องสรุป */
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        .card-title {
+            color: #666;
+            font-size: 15px;
+        }
+
+        .number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        /* กล่องเนื้อหา */
+
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+        }
+
+        .panel h2 {
+            margin-top: 0;
+        }
+
+        /* เลือกพนักงาน */
+
+        select {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        /* แถบความคืบหน้า */
+
+        .progress {
+            width: 100%;
+            height: 15px;
+            background: #e5e5e5;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #2878d7;
+            transition: 0.3s;
+        }
+
+        /* รายการงาน */
+
+        .task {
+            display: flex;
+            align-items: center;
+            padding: 14px 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .task input {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+        }
+
+        .task.done span {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        /* ปุ่ม */
+
+        button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 8px;
+            background: #173b67;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #24578f;
+        }
+
+        /* ตารางผู้บริหาร */
+
+        .employee {
+            padding: 14px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* มือถือ */
+
+        @media (max-width: 700px) {
+
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 12px;
+            }
+
+            header h1 {
+                font-size: 21px;
+            }
+
+        }
+
+    </style>
+</head>
+
+<body>
+
+<header>
+
+    <h1>ระบบติดตามงานสำนักงานบัญชี</h1>
+
+    <p>พีดับบลิวเค จำกัด</p>
+
+</header>
+
+
+<div class="container">
+
+
+    <!-- Dashboard -->
+
+    <div class="dashboard">
+
+        <div class="card">
+
+            <div class="card-title">
+                งานทั้งหมด
+            </div>
+
+            <div class="number" id="totalTasks">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                งานที่เสร็จแล้ว
+            </div>
+
+            <div class="number" id="completedTasks">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="card-title">
+                ความคืบหน้า
+            </div>
+
+            <div class="number" id="progressText">
+                0%
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- เลือกพนักงาน -->
+
+    <div class="panel">
+
+        <h2>เลือกพนักงาน</h2>
+
+        <select id="employeeSelect">
+
+            <option value="0">
+                นางสาว เบญจพร รุ้งมณีวรรณ
+            </option>
+
+            <option value="1">
+                นางสาว จิราพร จันทร์ตานี
+            </option>
+
+            <option value="2">
+                นางสาว อัญชลี แอโสะ
+            </option>
+
+            <option value="3">
+                นางสาว หทัยรัตน์ พลบาล
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <!-- รายการงาน -->
+
+    <div class="panel">
+
+        <h2>รายการงานบัญชี</h2>
+
+        <div id="taskList"></div>
+
+        <button onclick="saveTasks()">
+            บันทึกสถานะงาน
+        </button>
+
+    </div>
+
+
+    <!-- ผู้บริหาร -->
+
+    <div class="panel">
+
+        <h2>ภาพรวมสำหรับผู้บริหาร</h2>
+
+        <div id="summary"></div>
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+/* รายชื่อพนักงาน */
+
+const employees = [
+
+    "นางสาว เบญจพร รุ้งมณีวรรณ",
+
+    "นางสาว จิราพร จันทร์ตานี",
+
+    "นางสาว อัญชลี แอโสะ",
+
+    "นางสาว หทัยรัตน์ พลบาล"
+
+];
+
+
+/* รายการงานบัญชี */
+
+const tasks = [
+
+    "ตรวจสอบเอกสารรับ",
+
+    "ตรวจสอบเอกสารจ่าย",
+
+    "จัดทำใบสำคัญรับ",
+
+    "จัดทำใบสำคัญจ่าย",
+
+    "บันทึกบัญชี",
+
+    "บันทึกบัญชีแยกประเภท",
+
+    "จัดทำงบทดลอง",
+
+    "ตรวจสอบภาษีซื้อ",
+
+    "ตรวจสอบภาษีขาย",
+
+    "จัดทำ ภ.ง.ด.1",
+
+    "จัดทำ ภ.ง.ด.3",
+
+    "จัดทำ ภ.ง.ด.53",
+
+    "จัดทำ ภ.พ.30",
+
+    "จัดทำประกันสังคม"
+
+];
+
+
+/* พนักงานปัจจุบัน */
+
+let currentEmployee = 0;
+
+
+/* ข้อมูลการทำงาน */
+
+let workData =
+    JSON.parse(
+        localStorage.getItem("accountingWork")
+    ) || {};
+
+
+/* สร้างข้อมูลเริ่มต้น */
+
+function createEmployeeData() {
+
+    employees.forEach(function(employee, index) {
+
+        if (!workData[index]) {
+
+            workData[index] =
+                Array(tasks.length).fill(false);
+
+        }
+
+    });
+
+}
+
+
+/* แสดงงาน */
+
+function showTasks() {
+
+    createEmployeeData();
+
+    const taskList =
+        document.getElementById("taskList");
+
+    taskList.innerHTML = "";
+
+
+    tasks.forEach(function(task, index) {
+
+        const checked =
+            workData[currentEmployee][index];
+
+
+        const div =
+            document.createElement("label");
+
+        div.className =
+            checked ? "task done" : "task";
+
+
+        div.innerHTML = `
+
+            <input
+
+                type="checkbox"
+
+                ${checked ? "checked" : ""}
+
+                onchange="toggleTask(${index}, this.checked)"
+
+            >
+
+            <span>
+
+                ${task}
+
+            </span>
+
+        `;
+
+
+        taskList.appendChild(div);
+
+    });
+
+
+    updateDashboard();
+
+}
+
+
+/* เลือกพนักงาน */
+
+document
+    .getElementById("employeeSelect")
+    .addEventListener("change", function() {
+
+        currentEmployee =
+            Number(this.value);
+
+        showTasks();
+
+    });
+
+
+/* เปลี่ยนสถานะงาน */
+
+function toggleTask(index, checked) {
+
+    workData[currentEmployee][index] =
+        checked;
+
+    showTasks();
+
+}
+
+
+/* บันทึก */
+
+function saveTasks() {
+
+    localStorage.setItem(
+
+        "accountingWork",
+
+        JSON.stringify(workData)
+
+    );
+
+    alert(
+        "บันทึกสถานะงานเรียบร้อยแล้ว"
+    );
+
+    updateDashboard();
+
+}
+
+
+/* Dashboard */
+
+function updateDashboard() {
+
+    createEmployeeData();
+
+
+    let total = 0;
+
+    let completed = 0;
+
+
+    employees.forEach(function(employee, index) {
+
+        total += tasks.length;
+
+
+        workData[index].forEach(function(done) {
+
+            if (done) {
+
+                completed++;
+
+            }
+
+        });
+
+    });
+
+
+    let percent = 0;
+
+
+    if (total > 0) {
+
+        percent =
+            Math.round(
+                (completed / total) * 100
+            );
+
+    }
+
+
+    document.getElementById(
+        "totalTasks"
+    ).innerText = total;
+
+
+    document.getElementById(
+        "completedTasks"
+    ).innerText = completed;
+
+
+    document.getElementById(
+        "progressText"
+    ).innerText =
+        percent + "%";
+
+
+    showSummary();
+
+}
+
+
+/* สรุปผู้บริหาร */
+
+function showSummary() {
+
+    createEmployeeData();
+
+
+    const summary =
+        document.getElementById("summary");
+
+
+    summary.innerHTML = "";
+
+
+    employees.forEach(function(employee, index) {
+
+
+        let completed = 0;
+
+
+        workData[index].forEach(function(done) {
+
+            if (done) {
+
+                completed++;
+
+            }
+
+        });
+
+
+        let percent =
+            Math.round(
+                (completed / tasks.length) * 100
+            );
+
+
+        const div =
+            document.createElement("div");
+
+
+        div.className =
+            "employee";
+
+
+        div.innerHTML = `
+
+            <strong>
+
+                ${employee}
+
+            </strong>
+
+            <br>
+
+            เสร็จแล้ว ${completed}
+            / ${tasks.length} งาน
+
+            — ${percent}%
+
+        `;
+
+
+        summary.appendChild(div);
+
+    });
+
+}
+
+
+/* เริ่มระบบ */
+
+showTasks();
+
+
+</script>
+
+</body>
+</html>
